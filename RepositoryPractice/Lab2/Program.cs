@@ -19,6 +19,11 @@ namespace Lab2
 
         }
 
+        static void TestMethod2()
+        {
+
+        }
+
 
     }
 }
