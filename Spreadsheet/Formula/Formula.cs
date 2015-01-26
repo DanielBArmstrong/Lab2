@@ -17,6 +17,7 @@ namespace SpreadsheetUtilities
     /// </summary>
     public class Formula
     {
+        
         /// <summary>
         /// Creates a Formula from a string that consists of a standard infix expression composed
         /// from non-negative floating-point numbers (using standard C# syntax for double/int literals), 
@@ -32,6 +33,36 @@ namespace SpreadsheetUtilities
         /// </summary>
         public Formula(String formula)
         {
+            List<string> tokens = (List<String>) GetTokens(formula);
+           
+            foreach(String token in tokens)
+            {
+                double num1; 
+                char let;
+                                //String div = "/"; String mult = *'; char add = '+'; char sub = '-';
+
+      
+                if (double.TryParse(token, out num1))
+                {
+                    if (num1 < 0)
+                        throw new FormulaFormatException(formula);
+                    continue;
+                }
+          
+                if (token == "/")
+                    continue;
+                if (token == "*")
+                    continue;
+                if (token == "+")
+                    continue;
+                if (token == "-")
+                    continue;
+                for(int i = 0; i < token.Length; i++)
+                {
+                    
+
+                }
+            }
         }
 
         /// <summary>
