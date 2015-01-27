@@ -54,5 +54,33 @@ namespace TestCases
             Formula f = new Formula("x5 + y6");
             f.Evaluate(s => { throw new ArgumentException(); });
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void gogo()
+        {
+            Formula f = new Formula("((cc4) + 7) * 8");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void gogo1()
+        {
+            Formula f = new Formula(("((cc4) + 7) * 8)"));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void gogo2()
+        {
+            Formula f = new Formula(("((cc4) + 7) * 8 ++"));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void gogo3()
+        {
+            Formula f = new Formula(("*"));
+        }
     }
 }

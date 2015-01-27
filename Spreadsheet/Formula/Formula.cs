@@ -58,6 +58,7 @@ namespace SpreadsheetUtilities
             int rightParen = 0;
             bool check1 = false;
             bool check2 = false;
+            bool check3 = false;
             foreach (String token in tokens)
             {
                 double num2;
@@ -67,18 +68,26 @@ namespace SpreadsheetUtilities
                     rightParen++;
                 if (rightParen > leftParen)
                     throw new FormulaFormatException(formula);
-                if (check1 == true)
+               
+                if (check1)
                 {
                     if (!token.Equals("(") || !double.TryParse(token, out num2) || !Regex.IsMatch(token, @"[a-zA-Z]+\d+"))
                         throw new FormulaFormatException(formula);
                     check1 = false;
                 }
 
-                if (check2 == true)
+                if (check2)
                 {
                     if (!token.Equals(")") || !token.Equals("/") || !token.Equals("*") || !token.Equals("+") || !token.Equals("-"))
                         throw new FormulaFormatException(formula);
                     check2 = false;
+                }
+
+                if(check3)
+                {
+                    if (token.Equals("0"))
+                        throw new FormulaFormatException(formula);
+                    check3 = false;
                 }
 
                 if (token.Equals("(") || token.Equals("/") || token.Equals("*") || token.Equals("+") || token.Equals("-"))
@@ -87,6 +96,8 @@ namespace SpreadsheetUtilities
                 double num3;
                 if (token.Equals(")") || Regex.IsMatch(token, @"[a-zA-Z]+\d+") || double.TryParse(token, out num3))
                     check2 = true;
+                if (token.Equals("/"))
+                    check3 = true;
             }
 
                 if (leftParen != rightParen)
@@ -118,6 +129,40 @@ namespace SpreadsheetUtilities
         /// </summary>
         public double Evaluate(Lookup lookup)
         {
+            Stack<double> value = new Stack<double>();
+            Stack<string> operate = new Stack<string>();
+
+            foreach(string token in tokens)
+            {
+                double num;
+                if(double.TryParse(token, out num))
+                {
+                    if(operate.Peek().Equals("*"))
+                    {
+                        double val = value.Pop();
+                        string op = operate.Pop();
+                        double temp = num * val;
+                        value.Push(temp);
+                    }
+                    
+                    if(operate.Peek().Equals("/"))
+                    {
+                        double val = value.Pop();
+                        string op = operate.Pop();
+                        double temp = num / val;
+                        value.Push(temp);
+                    }
+                
+                if(Regex.IsMatch(tokens.First(), @"[a-zA-Z]+\d+"))
+                {
+                    double tok = lookup(token);
+
+                }
+                
+                }
+
+            }
+
             return 0;
         }
 
