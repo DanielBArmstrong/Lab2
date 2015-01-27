@@ -138,23 +138,38 @@ namespace SpreadsheetUtilities
                 double num;
                 if (double.TryParse(token, out num))
                 {
+                    if (operate.Count == 0)
+                    {
+                        value.Push(num);
+                        continue;
+                    }
+
                     if (operate.Peek().Equals("*") || operate.Peek().Equals("/"))
                     {
                         double temp = 0;
                         double val = value.Pop();
                         string op = operate.Pop();
-                        if(op.Equals("*"))
-                          temp = val * num;
+                        if (op.Equals("*"))
+                            temp = val * num;
                         else
                             temp = val / num;
                         value.Push(temp);
                     }
                     else
-                      value.Push(num);
+                    {
+                        value.Push(num);
+                        continue;
+                    }
                 }
                
                 if(Regex.IsMatch(token, @"[a-zA-Z]+\d+"))
                 {
+                    if (operate.Count == 0)
+                    {
+                        value.Push(lookup(token));
+                        continue;
+                    }
+                        
                     if (operate.Peek().Equals("*") || operate.Peek().Equals("/"))
                     {
                         double temp = 0;
@@ -175,6 +190,11 @@ namespace SpreadsheetUtilities
 
                 if(token.Equals("+") || token.Equals("-"))
                 {
+                    if(operate.Count == 0)
+                    {
+                        operate.Push(token);
+                        continue;
+                    }
                     if(operate.Peek().Equals("+") || operate.Peek().Equals("-"))
                     {
                         double temp = 0;
@@ -183,7 +203,7 @@ namespace SpreadsheetUtilities
                         string op = operate.Pop();
                         if(op.Equals("+"))
                             temp = val1 + val2;
-                        if(op.Equals("-"))
+                        else
                             temp = val1 - val2;
                        
                         value.Push(temp);
@@ -197,11 +217,50 @@ namespace SpreadsheetUtilities
 
                 if(token.Equals(")"))
                 {
+                    double temp = 0;
+                    if(operate.Peek().Equals("+") || operate.Peek().Equals("-"))
+                    {
+                        double val1 = value.Pop();
+                        double val2 = value.Pop();
+                        string op = operate.Pop();
+                        if (op.Equals("+"))
+                            temp = val1 + val2;
+                        else
+                            temp = val1 - val2;
+                        value.Push(temp);       
+                    }
 
+                    string openparen = operate.Pop();
+
+                    if(operate.Peek().Equals("*") || operate.Peek().Equals("/"))
+                    {
+                        double val1 = value.Pop();
+                        double val2 = value.Pop();
+                        string op = operate.Pop();
+                        if (op.Equals("*"))
+                            temp = val1 * val2;
+                        else
+                            temp = val1 / val2;
+                        value.Push(temp); 
+                    }
                 }
+
             }
 
-            return 0;
+            if (operate.Count == 0)
+                return value.Pop();
+            else
+            {
+                double val1 = value.Pop();
+                double val2 = value.Pop();
+                string op = operate.Pop();
+
+                if (op.Equals("+"))
+                    return val1 + val2;
+                else
+                    return val1 - val2;
+
+            }
         }
 
         /// <summary>
