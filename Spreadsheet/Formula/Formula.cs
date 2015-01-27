@@ -48,8 +48,8 @@ namespace SpreadsheetUtilities
                     continue;
                 }
 
-                if (!token.Equals("/") || !token.Equals("*") || !token.Equals("+") || !token.Equals("-")
-                    || !token.Equals("(") || !token.Equals(")") || !Regex.IsMatch(token, @"[a-zA-Z]+\d+"))
+                if (!token.Equals("/") && !token.Equals("*") && !token.Equals("+") && !token.Equals("-")
+                    && !token.Equals("(") && !token.Equals(")") && !Regex.IsMatch(token, @"[a-zA-Z]+\d+"))
                     throw new FormulaFormatException(formula);
 
             }
@@ -71,14 +71,14 @@ namespace SpreadsheetUtilities
                
                 if (check1)
                 {
-                    if (!token.Equals("(") || !double.TryParse(token, out num2) || !Regex.IsMatch(token, @"[a-zA-Z]+\d+"))
+                    if (!token.Equals("(") && !double.TryParse(token, out num2) && !Regex.IsMatch(token, @"[a-zA-Z]+\d+"))
                         throw new FormulaFormatException(formula);
                     check1 = false;
                 }
 
                 if (check2)
                 {
-                    if (!token.Equals(")") || !token.Equals("/") || !token.Equals("*") || !token.Equals("+") || !token.Equals("-"))
+                    if (!token.Equals(")") && !token.Equals("/") && !token.Equals("*") && !token.Equals("+") && !token.Equals("-"))
                         throw new FormulaFormatException(formula);
                     check2 = false;
                 }
@@ -96,6 +96,7 @@ namespace SpreadsheetUtilities
                 double num3;
                 if (token.Equals(")") || Regex.IsMatch(token, @"[a-zA-Z]+\d+") || double.TryParse(token, out num3))
                     check2 = true;
+               
                 if (token.Equals("/"))
                     check3 = true;
             }
@@ -104,9 +105,9 @@ namespace SpreadsheetUtilities
                     throw new FormulaFormatException(formula);
 
                 double num4;
-                if (!tokens.First().Equals("(") || !double.TryParse(tokens.First(), out num4) || !Regex.IsMatch(tokens.First(), @"[a-zA-Z]+\d+"))
+                if (!tokens.First().Equals("(") && !double.TryParse(tokens.First(), out num4) && !Regex.IsMatch(tokens.First(), @"[a-zA-Z]+\d+"))
                     throw new FormulaFormatException(formula);
-                if (!tokens.Last().Equals(")") || !double.TryParse(tokens.First(), out num4) || !Regex.IsMatch(tokens.First(), @"[a-zA-Z]+\d+"))
+                if (!tokens.Last().Equals(")") && !double.TryParse(tokens.Last(), out num4) && !Regex.IsMatch(tokens.Last(), @"[a-zA-Z]+\d+"))
                     throw new FormulaFormatException(formula);
    
         }
@@ -114,12 +115,12 @@ namespace SpreadsheetUtilities
         /// <summary>
         /// A Lookup function is one that maps some strings to double values.  Given a string,
         /// such a function can either return a double (meaning that the string maps to the
-        /// double) or throw an IllegalArgumentException (meaning that the string is unmapped.
+        /// double) or throw an ArgumentException (meaning that the string is unmapped.
         /// Exactly how a Lookup function decides which strings map to doubles and which
         /// don't is up to the implementation of that function.
         /// </summary>
         public delegate double Lookup(string s);
-
+  
         /// <summary>
         /// Evaluates this Formula, using lookup to determine the values of variables.  
         /// 
@@ -135,32 +136,61 @@ namespace SpreadsheetUtilities
             foreach(string token in tokens)
             {
                 double num;
-                if(double.TryParse(token, out num))
+                if (double.TryParse(token, out num))
                 {
-                    if(operate.Peek().Equals("*"))
+                    if (operate.Peek().Equals("*") || operate.Peek().Equals("/"))
                     {
+                        double temp = 0;
                         double val = value.Pop();
                         string op = operate.Pop();
-                        double temp = num * val;
+                        if(op.Equals("*"))
+                          temp = val * num;
+                        else
+                            temp = val / num;
                         value.Push(temp);
                     }
-                    
-                    if(operate.Peek().Equals("/"))
+                    else
+                      value.Push(num);
+                }
+               
+                if(Regex.IsMatch(token, @"[a-zA-Z]+\d+"))
+                {
+                    if (operate.Peek().Equals("*") || operate.Peek().Equals("/"))
                     {
+                        double temp = 0;
                         double val = value.Pop();
                         string op = operate.Pop();
-                        double temp = num / val;
+                        double tok = lookup(token);
+                        if(op.Equals("*"))
+                            temp = tok * val;
+                        else
+                            temp = tok / val;
+                       
+                        value.Push(temp);
+                    }
+
+                    else
+                     value.Push(lookup(token));
+                }
+
+                if(token.Equals("+") || token.Equals("-"))
+                {
+                    if(operate.Peek().Equals("+") || operate.Peek().Equals("-"))
+                    {
+                        double temp = 0;
+                        double val1 = value.Pop(); 
+                        double val2 = value.Pop();
+                        string op = operate.Pop();
+                        if(op.Equals("+"))
+                            temp = val1 + val2;
+                        if(op.Equals("-"))
+                            temp = val1 - val2;
+                       
                         value.Push(temp);
                     }
                 
-                if(Regex.IsMatch(tokens.First(), @"[a-zA-Z]+\d+"))
-                {
-                    double tok = lookup(token);
-
+                    operate.Push(token);
                 }
-                
-                }
-
             }
 
             return 0;

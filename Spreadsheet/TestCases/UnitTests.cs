@@ -9,6 +9,7 @@ namespace TestCases
     /// how to create your own, which we strong recommend that you do!  To run them, pull down
     /// the Test menu and do Run > All Tests.
     /// </summary>
+
     [TestClass]
     public class UnitTests
     {
@@ -64,13 +65,6 @@ namespace TestCases
 
         [TestMethod]
         [ExpectedException(typeof(FormulaFormatException))]
-        public void gogo1()
-        {
-            Formula f = new Formula(("((cc4) + 7) * 8)"));
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(FormulaFormatException))]
         public void gogo2()
         {
             Formula f = new Formula(("((cc4) + 7) * 8 ++"));
@@ -82,5 +76,20 @@ namespace TestCases
         {
             Formula f = new Formula(("*"));
         }
+
+        [TestMethod]
+        public void gogo4()
+        {
+            Formula f = new Formula("x5");
+            Assert.AreEqual(f.Evaluate(ValueLookup.Look), 4, 1e-6);
+        }
+    }
+}
+public class ValueLookup
+{
+    public static double Look(string s)
+    {
+        return 4;
+
     }
 }
