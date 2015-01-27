@@ -37,12 +37,10 @@ namespace SpreadsheetUtilities
             tokens = GetTokens(formula).ToList<string>();
             if (tokens.Capacity < 0)
                 throw new FormulaFormatException(formula);
-            
-            foreach(String token in tokens)
+
+            foreach (String token in tokens)
             {
-                double num1, num2; 
-                string var;
-               
+                double num1;
                 if (double.TryParse(token, out num1))
                 {
                     if (num1 < 0)
@@ -53,25 +51,53 @@ namespace SpreadsheetUtilities
                 if (!token.Equals("/") || !token.Equals("*") || !token.Equals("+") || !token.Equals("-")
                     || !token.Equals("(") || !token.Equals(")") || !Regex.IsMatch(token, @"[a-zA-Z]+\d+"))
                     throw new FormulaFormatException(formula);
-                
+
             }
 
             int leftParen = 0;
             int rightParen = 0;
-            foreach(String token in tokens)
+            bool check1 = false;
+            bool check2 = false;
+            foreach (String token in tokens)
             {
+                double num2;
                 if (token.Equals("("))
                     leftParen++;
                 if (token.Equals(")"))
                     rightParen++;
                 if (rightParen > leftParen)
                     throw new FormulaFormatException(formula);
+                if (check1 == true)
+                {
+                    if (!token.Equals("(") || !double.TryParse(token, out num2) || !Regex.IsMatch(token, @"[a-zA-Z]+\d+"))
+                        throw new FormulaFormatException(formula);
+                    check1 = false;
+                }
+
+                if (check2 == true)
+                {
+                    if (!token.Equals(")") || !token.Equals("/") || !token.Equals("*") || !token.Equals("+") || !token.Equals("-"))
+                        throw new FormulaFormatException(formula);
+                    check2 = false;
+                }
+
+                if (token.Equals("(") || token.Equals("/") || token.Equals("*") || token.Equals("+") || token.Equals("-"))
+                    check1 = true;
+
+                double num3;
+                if (token.Equals(")") || Regex.IsMatch(token, @"[a-zA-Z]+\d+") || double.TryParse(token, out num3))
+                    check2 = true;
             }
 
-            if (leftParen != rightParen)
-                throw new FormulaFormatException(formula);
+                if (leftParen != rightParen)
+                    throw new FormulaFormatException(formula);
 
-            if(!tokens.First().Equals("(") || tokens.First() != )
+                double num4;
+                if (!tokens.First().Equals("(") || !double.TryParse(tokens.First(), out num4) || !Regex.IsMatch(tokens.First(), @"[a-zA-Z]+\d+"))
+                    throw new FormulaFormatException(formula);
+                if (!tokens.Last().Equals(")") || !double.TryParse(tokens.First(), out num4) || !Regex.IsMatch(tokens.First(), @"[a-zA-Z]+\d+"))
+                    throw new FormulaFormatException(formula);
+   
         }
 
         /// <summary>
