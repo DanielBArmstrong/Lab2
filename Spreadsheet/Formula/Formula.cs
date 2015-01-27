@@ -17,6 +17,7 @@ namespace SpreadsheetUtilities
     /// </summary>
     public class Formula
     {
+        private List<string> tokens;
         
         /// <summary>
         /// Creates a Formula from a string that consists of a standard infix expression composed
@@ -33,13 +34,14 @@ namespace SpreadsheetUtilities
         /// </summary>
         public Formula(String formula)
         {
-            List<string> tokens = (List<String>) GetTokens(formula);
+            tokens = GetTokens(formula).ToList<string>();
             if (tokens.Capacity < 0)
                 throw new FormulaFormatException(formula);
             
             foreach(String token in tokens)
             {
-                double num1; 
+                double num1, num2; 
+                string var;
                
                 if (double.TryParse(token, out num1))
                 {
@@ -51,10 +53,25 @@ namespace SpreadsheetUtilities
                 if (!token.Equals("/") || !token.Equals("*") || !token.Equals("+") || !token.Equals("-")
                     || !token.Equals("(") || !token.Equals(")") || !Regex.IsMatch(token, @"[a-zA-Z]+\d+"))
                     throw new FormulaFormatException(formula);
+                
             }
-            
+
+            int leftParen = 0;
+            int rightParen = 0;
             foreach(String token in tokens)
-        
+            {
+                if (token.Equals("("))
+                    leftParen++;
+                if (token.Equals(")"))
+                    rightParen++;
+                if (rightParen > leftParen)
+                    throw new FormulaFormatException(formula);
+            }
+
+            if (leftParen != rightParen)
+                throw new FormulaFormatException(formula);
+
+            if(!tokens.First().Equals("(") || tokens.First() != )
         }
 
         /// <summary>
