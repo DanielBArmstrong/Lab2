@@ -34,35 +34,27 @@ namespace SpreadsheetUtilities
         public Formula(String formula)
         {
             List<string> tokens = (List<String>) GetTokens(formula);
-           
+            if (tokens.Capacity < 0)
+                throw new FormulaFormatException(formula);
+            
             foreach(String token in tokens)
             {
                 double num1; 
-                char let;
-                                //String div = "/"; String mult = *'; char add = '+'; char sub = '-';
-
-      
+               
                 if (double.TryParse(token, out num1))
                 {
                     if (num1 < 0)
                         throw new FormulaFormatException(formula);
                     continue;
                 }
-          
-                if (token == "/")
-                    continue;
-                if (token == "*")
-                    continue;
-                if (token == "+")
-                    continue;
-                if (token == "-")
-                    continue;
-                for(int i = 0; i < token.Length; i++)
-                {
-                    
 
-                }
+                if (!token.Equals("/") || !token.Equals("*") || !token.Equals("+") || !token.Equals("-")
+                    || !token.Equals("(") || !token.Equals(")") || !Regex.IsMatch(token, @"[a-zA-Z]+\d+"))
+                    throw new FormulaFormatException(formula);
             }
+            
+            foreach(String token in tokens)
+        
         }
 
         /// <summary>
