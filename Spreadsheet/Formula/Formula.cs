@@ -191,6 +191,14 @@ namespace SpreadsheetUtilities
                 
                     operate.Push(token);
                 }
+
+                if (token.Equals("*") || token.Equals("/") || token.Equals("("))
+                    operate.Push(token);
+
+                if(token.Equals(")"))
+                {
+
+                }
             }
 
             return 0;
