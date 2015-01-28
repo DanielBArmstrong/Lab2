@@ -273,10 +273,11 @@ namespace SpreadsheetUtilities
                         value.Push(temp);
                         
                     }
-
+                    //top of operate should be an open parenthesis, pop it.
                     string openparen = operate.Pop();
                     if (operate.Count == 0)
                         continue;
+                  //if * or / is on top of operate, double pop value, pop operate and make calculation. Push result to value.
                     if(operate.Peek().Equals("*") || operate.Peek().Equals("/"))
                     {
                         double val1 = value.Pop();
@@ -292,8 +293,10 @@ namespace SpreadsheetUtilities
 
             }
 
+            //if the operate stack is empty, pop the value stack and return the value.
             if (operate.Count == 0)
                 return value.Pop();
+                //otherwise double pop value, pop operate, and return the ensuing calculation.
             else
             {
                 double val1 = value.Pop();

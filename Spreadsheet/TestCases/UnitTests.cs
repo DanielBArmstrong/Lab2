@@ -140,8 +140,17 @@ namespace TestCases
      
     }
 }
+/// <summary>
+/// This class contains one method which meets the signiture for the delegate defined in Formula.
+/// The Look method is passed as a parameter for testing.
+/// </summary>
 public class ValueLookup
 {
+    /// <summary>
+    /// Takes in a string and returns a corresponding double. This method is used to help test a the Formula class.
+    /// </summary>
+    /// <param name="s"> String representing a variable.</param>
+    /// <returns>Double that corresponds to that variable.</returns>
     public static double Look(string s)
     {
        if(s.Equals("x5"))
