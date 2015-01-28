@@ -35,11 +35,12 @@ namespace SpreadsheetUtilities
         public Formula(String formula)
         {
             tokens = GetTokens(formula).ToList<string>();
+           //if there are no tokens in the string throw format exception.
             if (tokens.Capacity < 0)
                 throw new FormulaFormatException("The formula " + formula + " is syntactically invalid");
-
+            //loop through all tokens.
             foreach (String token in tokens)
-            {
+            {   //if token is a non-negative double it is valid.
                 double num1;
                 if (double.TryParse(token, out num1))
                 {
@@ -48,20 +49,23 @@ namespace SpreadsheetUtilities
                     continue;
                 }
 
+                //if token does not equal one of the following it is invalid. Throw an exception.
                 if (!token.Equals("/") && !token.Equals("*") && !token.Equals("+") && !token.Equals("-")
                     && !token.Equals("(") && !token.Equals(")") && !Regex.IsMatch(token, @"[a-zA-Z]+\d+"))
                     throw new FormulaFormatException("The formula " + formula + " is syntactically invalid");
 
             }
-
+            
+            //set up counters.
             int leftParen = 0;
             int rightParen = 0;
             bool check1 = false;
             bool check2 = false;
             bool check3 = false;
             foreach (String token in tokens)
-            {
+            {   
                 double num2;
+                //continue to count each parenthesis. If opens out number closeds throw exception.
                 if (token.Equals("("))
                     leftParen++;
                 if (token.Equals(")"))
@@ -69,6 +73,7 @@ namespace SpreadsheetUtilities
                 if (rightParen > leftParen)
                     throw new FormulaFormatException("The formula " + formula + " is syntactically invalid");
                
+                //checks that make sure tokens following a specific type of token are valid types.
                 if (check1)
                 {
                     if (!token.Equals("(") && !double.TryParse(token, out num2) && !Regex.IsMatch(token, @"[a-zA-Z]+\d+"))
@@ -90,6 +95,7 @@ namespace SpreadsheetUtilities
                     check3 = false;
                 }
 
+                //set the checks for the next token depending on the current token.
                 if (token.Equals("(") || token.Equals("/") || token.Equals("*") || token.Equals("+") || token.Equals("-"))
                     check1 = true;
 
@@ -100,10 +106,11 @@ namespace SpreadsheetUtilities
                 if (token.Equals("/"))
                     check3 = true;
             }
-
+                //number of open and closed parenthesis should be equal.
                 if (leftParen != rightParen)
                     throw new FormulaFormatException("The formula " + formula + " is syntactically invalid");
 
+                //checking first and last token to make sure they are of valid type.
                 double num4;
                 if (!tokens.First().Equals("(") && !double.TryParse(tokens.First(), out num4) && !Regex.IsMatch(tokens.First(), @"[a-zA-Z]+\d+"))
                     throw new FormulaFormatException("The formula " + formula + " is syntactically invalid");
@@ -129,21 +136,25 @@ namespace SpreadsheetUtilities
         /// with an explanatory Message.
         /// </summary>
         public double Evaluate(Lookup lookup)
-        {
+        {   //establish stacks value for the value tokens and operate for the operator tokens.
             Stack<double> value = new Stack<double>();
             Stack<string> operate = new Stack<string>();
 
             foreach(string token in tokens)
             {
+                //if current token is a double.
                 double num;
                 if (double.TryParse(token, out num))
                 {
+                    //push token to value if operate is empty.
                     if (operate.Count == 0)
                     {
                         value.Push(num);
                         continue;
                     }
 
+                    //if operate contains * or / on top, pop value, pop operate, apply the operator to
+                    //token and popped value.
                     if (operate.Peek().Equals("*") || operate.Peek().Equals("/"))
                     {
                         double temp = 0;
@@ -156,32 +167,37 @@ namespace SpreadsheetUtilities
                         value.Push(temp);
                         continue;
                     }
+                    //otherwise push the token onto value stack.
                     else
                     {
                         value.Push(num);
                         continue;
                     }
                 }
-               
+
+                //if current token is a variable
                 if(Regex.IsMatch(token, @"[a-zA-Z]+\d+"))
-                {
+                {  
+                    //try to lookup the value of the variable.
                     try
                     {
                         double temp = lookup(token);
                     }
                     catch(ArgumentException)
-                    {
+                    {   //Throw a more specific Exception than is thrown by a failed lookup.
                         throw new FormulaEvaluationException("Unable to find a value for all variables with method passed by user");   
                     }
-                   
+                   //if lookup was succesful, store the variables value in tok.
                     double tok = lookup(token);
                    
+                    //push to value if operate is empty.
                     if (operate.Count == 0)
                     {
                         value.Push(tok);
                         continue;
                     }
-
+                    //if operate contains * or / on top of stack, pop value, pop operate, apply
+                    //apply popped operator to popped value and tok. Push result to value.
                     if (operate.Peek().Equals("*") || operate.Peek().Equals("/"))
                     {
                         double temp = 0;
@@ -195,7 +211,7 @@ namespace SpreadsheetUtilities
                         value.Push(temp);
                         continue;
                     }
-
+                    
                     else
                     {
                         value.Push(tok);
@@ -203,6 +219,7 @@ namespace SpreadsheetUtilities
                     }
                 }
 
+                //if token is + or -, push it to operate it's empty.
                 if(token.Equals("+") || token.Equals("-"))
                 {
                     if(operate.Count == 0)
@@ -210,6 +227,8 @@ namespace SpreadsheetUtilities
                         operate.Push(token);
                         continue;
                     }
+                    //if top of operate is another + or -, double pop value, pop operate, apply the popped 
+                    //operator to the 2 popped values. Push the result to value.
                     if(operate.Peek().Equals("+") || operate.Peek().Equals("-"))
                     {
                         double temp = 0;
@@ -223,19 +242,24 @@ namespace SpreadsheetUtilities
                        
                         value.Push(temp);
                     }
-                
+                    
+                    //push the token to operate.
                     operate.Push(token);
                     continue;
                 }
 
+                //if the token is * / or ( push it to operate.
                 if (token.Equals("*") || token.Equals("/") || token.Equals("("))
                 {
                     operate.Push(token);
                     continue;
                 }
 
+                //if the token is a closed parenthesis
                 if(token.Equals(")"))
                 {
+                    //if + or - is on top of operate, double pop value, pop operate, apply the popped operator
+                    //to the 2 popped values.
                     double temp = 0;
                     if(operate.Peek().Equals("+") || operate.Peek().Equals("-"))
                     {
