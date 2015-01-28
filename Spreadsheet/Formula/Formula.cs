@@ -188,11 +188,12 @@ namespace SpreadsheetUtilities
                         double val = value.Pop();
                         string op = operate.Pop();
                         if (op.Equals("*"))
-                            temp = tok * val;
+                            temp = val * tok;
                         else
-                            temp = tok / val;
+                            temp = val / tok;
 
                         value.Push(temp);
+                        continue;
                     }
 
                     else
@@ -216,9 +217,9 @@ namespace SpreadsheetUtilities
                         double val2 = value.Pop();
                         string op = operate.Pop();
                         if(op.Equals("+"))
-                            temp = val1 + val2;
+                            temp = val2 + val1;
                         else
-                            temp = val1 - val2;
+                            temp = val2 - val1;
                        
                         value.Push(temp);
                     }
@@ -242,9 +243,9 @@ namespace SpreadsheetUtilities
                         double val2 = value.Pop();
                         string op = operate.Pop();
                         if (op.Equals("+"))
-                            temp = val1 + val2;
+                            temp = val2 + val1;
                         else
-                            temp = val1 - val2;
+                            temp = val2 - val1;
                         value.Push(temp);
                         
                     }
@@ -260,7 +261,7 @@ namespace SpreadsheetUtilities
                         if (op.Equals("*"))
                             temp = val1 * val2;
                         else
-                            temp = val1 / val2;
+                            temp = val2 / val1;
                         value.Push(temp); 
                     }
                 }
@@ -276,9 +277,9 @@ namespace SpreadsheetUtilities
                 string op = operate.Pop();
 
                 if (op.Equals("+"))
-                    return val1 + val2;
+                    return val2 + val1;
                 else
-                    return val1 - val2;
+                    return val2 - val1;
 
             }
         }

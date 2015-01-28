@@ -35,6 +35,34 @@ namespace TestCases
         }
 
         [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct4()
+        {
+            Formula f = new Formula("((cc4) + 7) * 8 ++");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct5()
+        {
+            Formula f = new Formula(("*"));
+        }
+
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct6()
+        {
+            Formula f = new Formula(("(9 * cc4) *x5 6"));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct7()
+        {
+            Formula f = new Formula(("(9 * 8) *x5 + 6 -"));
+        }
+        [TestMethod]
         public void Evaluate1()
         {
             Formula f = new Formula("2+3");
@@ -87,25 +115,29 @@ namespace TestCases
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FormulaFormatException))]
-        public void gogo2()
+        public void Evaluate8()
         {
-            Formula f = new Formula("((cc4) + 7) * 8 ++");
+            Formula f = new Formula("cc4 / 5");
+            Assert.AreEqual(f.Evaluate(ValueLookup.Look), 7.6, 1e-6);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FormulaFormatException))]
-        public void gogo3()
-        {
-            Formula f = new Formula(("*"));
-        }
-
-        [TestMethod]
-        public void gogo4()
+        public void Evaluate9()
         {
             Formula f = new Formula("x5");
             Assert.AreEqual(f.Evaluate(ValueLookup.Look), 4, 1e-6);
         }
+
+        [TestMethod]
+        public void Evaluate10()
+        {
+            Formula f = new Formula("(x5 + 99 * (8 + z98) - 9) / 3");
+            Assert.AreEqual(f.Evaluate(ValueLookup.Look), 658.333333 , 1e-6);
+        }
+
+     
+
+     
     }
 }
 public class ValueLookup
