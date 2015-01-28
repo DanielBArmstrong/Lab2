@@ -54,20 +54,43 @@ namespace TestCases
         {
             Formula f = new Formula("x5 + y6");
             f.Evaluate(s => { throw new ArgumentException(); });
+            
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FormulaFormatException))]
-        public void gogo()
+        [ExpectedException(typeof(FormulaEvaluationException))]
+        public void Evaluate4()
         {
-            Formula f = new Formula("((cc4) + 7) * 8");
+            Formula f = new Formula("(c4 + 7) * 8");
+            f.Evaluate(ValueLookup.Look);
+        }
+
+        [TestMethod]
+        public void Evaluate5()
+        {
+            Formula f = new Formula("(cc4 + 7) * 8");
+            Assert.AreEqual(f.Evaluate(ValueLookup.Look), 360.0, 1e-6);
+        }
+
+        [TestMethod]
+        public void Evaluate6()
+        {
+            Formula f = new Formula("((cc4 * x5) / 5 + 3) * r6");
+            Assert.AreEqual(f.Evaluate(ValueLookup.Look), 684.7, 1e-6);
+        }
+
+        [TestMethod]
+        public void Evaluate7()
+        {
+            Formula f = new Formula("cc4 * 5 / (x5 + 3 - 9) ");
+            Assert.AreEqual(f.Evaluate(ValueLookup.Look), -95, 1e-6);
         }
 
         [TestMethod]
         [ExpectedException(typeof(FormulaFormatException))]
         public void gogo2()
         {
-            Formula f = new Formula(("((cc4) + 7) * 8 ++"));
+            Formula f = new Formula("((cc4) + 7) * 8 ++");
         }
 
         [TestMethod]
@@ -89,7 +112,16 @@ public class ValueLookup
 {
     public static double Look(string s)
     {
+       if(s.Equals("x5"))
         return 4;
 
+       if (s.Equals("cc4"))
+           return 38;
+       if (s.Equals("z98"))
+           return 12;
+       if (s.Equals("r6"))
+           return 20.5;
+       else
+           throw new ArgumentException();
     }
 }

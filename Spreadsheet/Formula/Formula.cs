@@ -36,7 +36,7 @@ namespace SpreadsheetUtilities
         {
             tokens = GetTokens(formula).ToList<string>();
             if (tokens.Capacity < 0)
-                throw new FormulaFormatException(formula);
+                throw new FormulaFormatException("The formula " + formula + " is syntactically invalid");
 
             foreach (String token in tokens)
             {
@@ -44,13 +44,13 @@ namespace SpreadsheetUtilities
                 if (double.TryParse(token, out num1))
                 {
                     if (num1 < 0)
-                        throw new FormulaFormatException(formula);
+                        throw new FormulaFormatException("The formula " + formula + " is syntactically invalid");
                     continue;
                 }
 
                 if (!token.Equals("/") && !token.Equals("*") && !token.Equals("+") && !token.Equals("-")
                     && !token.Equals("(") && !token.Equals(")") && !Regex.IsMatch(token, @"[a-zA-Z]+\d+"))
-                    throw new FormulaFormatException(formula);
+                    throw new FormulaFormatException("The formula " + formula + " is syntactically invalid");
 
             }
 
@@ -67,26 +67,26 @@ namespace SpreadsheetUtilities
                 if (token.Equals(")"))
                     rightParen++;
                 if (rightParen > leftParen)
-                    throw new FormulaFormatException(formula);
+                    throw new FormulaFormatException("The formula " + formula + " is syntactically invalid");
                
                 if (check1)
                 {
                     if (!token.Equals("(") && !double.TryParse(token, out num2) && !Regex.IsMatch(token, @"[a-zA-Z]+\d+"))
-                        throw new FormulaFormatException(formula);
+                        throw new FormulaFormatException("The formula " + formula + " is syntactically invalid");
                     check1 = false;
                 }
 
                 if (check2)
                 {
                     if (!token.Equals(")") && !token.Equals("/") && !token.Equals("*") && !token.Equals("+") && !token.Equals("-"))
-                        throw new FormulaFormatException(formula);
+                        throw new FormulaFormatException("The formula " + formula + " is syntactically invalid");
                     check2 = false;
                 }
 
                 if(check3)
                 {
                     if (token.Equals("0"))
-                        throw new FormulaFormatException(formula);
+                        throw new FormulaFormatException("The formula " + formula + " is syntactically invalid");
                     check3 = false;
                 }
 
@@ -102,13 +102,13 @@ namespace SpreadsheetUtilities
             }
 
                 if (leftParen != rightParen)
-                    throw new FormulaFormatException(formula);
+                    throw new FormulaFormatException("The formula " + formula + " is syntactically invalid");
 
                 double num4;
                 if (!tokens.First().Equals("(") && !double.TryParse(tokens.First(), out num4) && !Regex.IsMatch(tokens.First(), @"[a-zA-Z]+\d+"))
-                    throw new FormulaFormatException(formula);
+                    throw new FormulaFormatException("The formula " + formula + " is syntactically invalid");
                 if (!tokens.Last().Equals(")") && !double.TryParse(tokens.Last(), out num4) && !Regex.IsMatch(tokens.Last(), @"[a-zA-Z]+\d+"))
-                    throw new FormulaFormatException(formula);
+                    throw new FormulaFormatException("The formula " + formula + " is syntactically invalid");
    
         }
 
@@ -154,6 +154,7 @@ namespace SpreadsheetUtilities
                         else
                             temp = val / num;
                         value.Push(temp);
+                        continue;
                     }
                     else
                     {
@@ -164,28 +165,41 @@ namespace SpreadsheetUtilities
                
                 if(Regex.IsMatch(token, @"[a-zA-Z]+\d+"))
                 {
+                    try
+                    {
+                        double temp = lookup(token);
+                    }
+                    catch(ArgumentException)
+                    {
+                        throw new FormulaEvaluationException("Unable to find a value for all variables with method passed by user");   
+                    }
+                   
+                    double tok = lookup(token);
+                   
                     if (operate.Count == 0)
                     {
-                        value.Push(lookup(token));
+                        value.Push(tok);
                         continue;
                     }
-                        
+
                     if (operate.Peek().Equals("*") || operate.Peek().Equals("/"))
                     {
                         double temp = 0;
                         double val = value.Pop();
                         string op = operate.Pop();
-                        double tok = lookup(token);
-                        if(op.Equals("*"))
+                        if (op.Equals("*"))
                             temp = tok * val;
                         else
                             temp = tok / val;
-                       
+
                         value.Push(temp);
                     }
 
                     else
-                     value.Push(lookup(token));
+                    {
+                        value.Push(tok);
+                        continue;
+                    }
                 }
 
                 if(token.Equals("+") || token.Equals("-"))
@@ -210,10 +224,14 @@ namespace SpreadsheetUtilities
                     }
                 
                     operate.Push(token);
+                    continue;
                 }
 
                 if (token.Equals("*") || token.Equals("/") || token.Equals("("))
+                {
                     operate.Push(token);
+                    continue;
+                }
 
                 if(token.Equals(")"))
                 {
@@ -227,11 +245,13 @@ namespace SpreadsheetUtilities
                             temp = val1 + val2;
                         else
                             temp = val1 - val2;
-                        value.Push(temp);       
+                        value.Push(temp);
+                        
                     }
 
                     string openparen = operate.Pop();
-
+                    if (operate.Count == 0)
+                        continue;
                     if(operate.Peek().Equals("*") || operate.Peek().Equals("/"))
                     {
                         double val1 = value.Pop();
